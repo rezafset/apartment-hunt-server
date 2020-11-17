@@ -6,6 +6,7 @@ const PORT = process.env.PORT || 7000;
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const fileUpload = require('express-fileupload');
+const ObjectId = require('mongodb').ObjectId;
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -17,7 +18,9 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 client.connect(err => {
     const houseCollection = client.db("apartmentHunt").collection("house");
+    const rentCollection = client.db("apartmentHunt").collection("rent");
 
+    // Add house
     app.post('/addHouse', (req, res) => {
         const file = req.files.file;
         const title = req.body.title;
@@ -49,6 +52,22 @@ client.connect(err => {
             .toArray((error, document) => {
                 res.send(document);
             })
+    });
+
+    // Get selected apt data
+    app.get('/apartmentDetails/:id', (req, res) => {
+    houseCollection.find({
+      _id: ObjectId(req.params.id)
+    })
+    .toArray((err, documents) => {
+        res.send(documents[0])
+        })
+    })
+    
+    // Request Apartment Booking
+    app.post('/requestBooking', (req, res) => {
+        const receivedData = req.body;
+        console.log(receivedData);
     })
 
 });
